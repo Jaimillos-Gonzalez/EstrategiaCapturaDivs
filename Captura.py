@@ -17,7 +17,7 @@ def getDataFromYahooUsingAPI(tickerAnalisis):
     # Filtrar solo filas con dividendos
     div_rows = hist[hist["Dividends"] > 0].copy()
     # Crear lista para resultados
-    resultados = []
+    resultados = [] 
 
     # Recorrer filas con dividendos
     for _, row in div_rows.iterrows():
