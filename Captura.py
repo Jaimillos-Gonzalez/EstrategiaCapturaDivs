@@ -1,5 +1,62 @@
 import requests
 from bs4 import BeautifulSoup
+import time
+import yfinance as yf
+import pandas as pd
+
+#USANDO LA LIBRERIA DE YAHOO
+def getDataFromYahooUsingAPI(tickerAnalisis):
+    ticker = yf.Ticker(tickerAnalisis)
+    hist = ticker.history(period="1y")
+    hist = hist.reset_index()
+
+    hist_selected = hist[['Date','Open', 'Close', 'Dividends']]
+    hist_selected = hist_selected.reset_index()
+
+
+    # Filtrar solo filas con dividendos
+    div_rows = hist[hist["Dividends"] > 0].copy()
+    # Crear lista para resultados
+    resultados = []
+
+    # Recorrer filas con dividendos
+    for _, row in div_rows.iterrows():
+        fecha_exdate = row['Date']
+        dividendo = row['Dividends']
+
+        # Buscar fila del día anterior
+        idx = hist[hist['Date'] < fecha_exdate].last_valid_index()
+        if idx is None:
+            continue
+        fila_anterior = hist.loc[idx]
+
+        # Extraer valores
+        precio_cierre_dia_anterior = fila_anterior['Close']
+        precio_apertura_exdate = row['Open']
+
+        # Cálculos
+        porcentaje_dividendo = dividendo / precio_cierre_dia_anterior
+        variacion_precio = -((precio_cierre_dia_anterior - precio_apertura_exdate) / precio_cierre_dia_anterior)
+        rentabilidad_total = dividendo + variacion_precio
+
+        # Agregar fila de resultados
+        resultados.append({
+            "Fecha": fecha_exdate.date(),
+            "Precio Cierre día ExDate -1": round(precio_cierre_dia_anterior, 2),
+            "Precio Apertura día ExDate": round(precio_apertura_exdate, 2),
+            "Dividendo": round(dividendo, 4),
+            "% Dividendo": round(porcentaje_dividendo * 100, 2),
+            "% Variacion Precio": round(variacion_precio * 100, 2),
+            "Rentabilidad Op.": round(rentabilidad_total * 100, 2)
+        })
+
+    # Convertir a DataFrame
+    df_resultados = pd.DataFrame(resultados)
+
+    df_resultados.to_excel(f"{tickerAnalisis}_precios.csv", index=False)
+
+
+
 
 def extraer_datos_bito(ticker):
     """
@@ -16,6 +73,7 @@ def extraer_datos_bito(ticker):
     try:
         response = requests.get(url)
         response.raise_for_status()  # Lanza una excepción para códigos de estado HTTP erróneos
+        time.sleep(5)
 
         soup = BeautifulSoup(response.content, 'html.parser')
 
@@ -50,6 +108,9 @@ def extraer_datos_bito(ticker):
         return []
 
 # Ejemplo de uso:
+getDataFromYahooUsingAPI("BITO")
+
+
 ticker = "BITO"
 datos_bito = extraer_datos_bito(ticker)
 
