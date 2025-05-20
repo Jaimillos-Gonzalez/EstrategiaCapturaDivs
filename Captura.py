@@ -31,13 +31,13 @@ def getDataFromYahooUsingAPI(tickerAnalisis):
         fila_anterior = hist.loc[idx]
 
         # Extraer valores
-        precio_cierre_dia_anterior = fila_anterior['Close']
-        precio_apertura_exdate = row['Open']
+        precio_cierre_dia_anterior = round(fila_anterior['Close'], 2)
+        precio_apertura_exdate = round(row['Open'], 2)
 
         # Cálculos
         porcentaje_dividendo = dividendo / precio_cierre_dia_anterior
         variacion_precio = -((precio_cierre_dia_anterior - precio_apertura_exdate) / precio_cierre_dia_anterior)
-        rentabilidad_total = dividendo + variacion_precio
+        rentabilidad_total = porcentaje_dividendo + variacion_precio
 
         # Agregar fila de resultados
         resultados.append({
@@ -53,7 +53,7 @@ def getDataFromYahooUsingAPI(tickerAnalisis):
     # Convertir a DataFrame
     df_resultados = pd.DataFrame(resultados)
 
-    df_resultados.to_excel(f"{tickerAnalisis}_precios.csv", index=False)
+    df_resultados.to_excel(f"{tickerAnalisis}_precios.xlsx", index=False)
 
 
 
