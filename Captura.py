@@ -7,12 +7,11 @@ import pandas as pd
 #USANDO LA LIBRERIA DE YAHOO
 def getDataFromYahooUsingAPI(tickerAnalisis):
     ticker = yf.Ticker(tickerAnalisis)
-    hist = ticker.history(period="1y")
+    hist = ticker.history(period="1mo")
     hist = hist.reset_index()
 
     hist_selected = hist[['Date','Open', 'Close', 'Dividends']]
     hist_selected = hist_selected.reset_index()
-
 
     # Filtrar solo filas con dividendos
     div_rows = hist[hist["Dividends"] > 0].copy()
